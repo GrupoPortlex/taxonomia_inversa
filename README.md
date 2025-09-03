@@ -1,10 +1,6 @@
 ## Descripción
 
-Itinerario de rutas - ESMAS-ES+ es una guía interactiva de un sistema de clasificación semántica. Este recurso organiza rutas ontológicas en distintos mundos conceptuales, abarcando una amplia variedad de temas. Cada ruta está acompañada de numerosos ejemplos léxicos para ilustrar su significado, convirtiéndolo en una herramienta completa para la exploración del léxico.
-
-Para explorar el contenido de este itinerario, puedes navegar a través de los distintos mundos conceptuales, como, por ejemplo, "Animado" o "Material". Si buscas una ruta específica, puedes utilizar el filtro de búsqueda para encontrarla fácilmente.
-
-Cada ruta se presenta con una estructura jerárquica que te ayuda a entender su clasificación. Al seleccionar una, encontrarás una lista de palabras que pertenecen a esa categoría, sirviendo como ejemplos ilustrativos.
+Esta herramienta representa un prototipo que opera de abajo hacia arriba al identificar categorías a partir de ejemplos concretos. Su diseño flexible facilita la organización eficiente y la navegación intuitiva a través de sistemas de conocimiento complejos, optimizando el descubrimiento de información. Su función principal es facilitar una búsqueda y un descubrimiento de información más intuitivo, permitiendo al usuario encontrar la ubicación exacta de un elemento dentro de una estructura semántica.
 
 ## Licencia
 
@@ -17,5 +13,5 @@ Condiciones de uso:
 
 ## Forma de cita
 
-Domínguez Vázquez, María José, Valcárcel Riveiro, Carlos & Arias-Arias, Iván (2025): Itinerario de rutas - ESMAS-ES+. Disponible en: https://grupoportlex.github.io/itinerario_rutas/. 
+Domínguez Vázquez, María José, Valcárcel Riveiro, Carlos & Arias-Arias, Iván (2025): Taxonomía inversa. Disponible en: https://grupoportlex.github.io/taxonomia_inversa/. 
 
