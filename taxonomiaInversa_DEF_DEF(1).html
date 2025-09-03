@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taxonomía Inversa (Ejemplo a Categoría)</title>
+    <style>
+        :root {
+            --main-bg-color: #f4f4f9;
+            --text-color: #333;
+            --summary-color: #2a68c9;
+            --border-color: #e0e0e0;
+            --accent-color: #4CAF50;
+            --card-bg-color: #fff;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --search-bg-color: #fff;
+            --search-border-color: #ccc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 2em;
+            background-color: var(--main-bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 2em;
+            background-color: var(--card-bg-color);
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--summary-color);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5em;
+            margin-bottom: 1em;
+        }
+
+        .search-container {
+            width: 100%;
+            margin-bottom: 2em;
+        }
+
+        #searchInput {
+            width: 90%;
+            padding: 12px 20px;
+            font-size: 1.1em;
+            border: 1px solid var(--search-border-color);
+            border-radius: 25px;
+            background-color: var(--search-bg-color);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        #searchInput:focus {
+            outline: none;
+            border-color: var(--summary-color);
+            box-shadow: 0 0 5px rgba(42, 104, 201, 0.5);
+        }
+
+        .results-container {
+            margin-top: 1em;
+            text-align: left;
+            display: grid;
+            gap: 1.5em;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        }
+
+        .result-card {
+            background-color: var(--main-bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5em;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-example {
+            font-weight: bold;
+            color: var(--summary-color);
+            margin-bottom: 0.5em;
+            font-size: 1.1em;
+        }
+
+        .result-path {
+            font-size: 0.9em;
+            color: var(--text-color);
+            word-wrap: break-word;
+        }
+
+        .footer {
+            margin-top: 2em;
+            font-size: 0.8em;
+            color: var(--text-color);
+            text-align: center;
+        }
+
+        details {
+            text-align: left;
+            margin: 1em 0;
+            padding: 1em;
+            border-radius: 8px;
+            background-color: #e9f5ff;
+            border: 1px solid #cce7ff;
+        }
+
+        summary {
+            font-weight: bold;
+            cursor: pointer;
+            color: var(--summary-color);
+            outline: none;
+        }
+
+        summary::-webkit-details-marker {
+            color: var(--summary-color);
+        }
+
+        summary:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Taxonomía Inversa - ESMAS-ES+ </h1>
+   <h1>De ejemplos a categorías ontológicas</h1>
+        <details>
+            <summary>Descripción de la herramienta</summary>
+            <p>Esta herramienta representa un prototipo que opera de abajo hacia arriba al identificar categorías a partir de ejemplos concretos. Su diseño flexible facilita la organización eficiente y la navegación intuitiva a través de sistemas de conocimiento complejos, optimizando el descubrimiento de información. Su función principal es facilitar una búsqueda y un descubrimiento de información más intuitivo, permitiendo al usuario encontrar la ubicación exacta de un elemento dentro de una estructura semántica.</p>
+        </details>
+
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Busca por ejemplo o por ruta...">
+        </div>
+
+        <div class="results-container" id="resultsContainer">
+            </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const resultsContainer = document.getElementById('resultsContainer');
+            
+            // Datos de ejemplo
+            const data = [
+                { example: "niños", path: ["Animado", "Humano", "Condición y relación", "General"] },
+                { example: "padre", path: ["Animado", "Humano", "Condición y relación", "General"] },
+                { example: "europeo", path: ["Animado", "Humano", "Condición y relación", "Origen"] },
+                { example: "china", path: ["Animado", "Humano", "Condición y relación", "Origen"] },
+                { example: "madre", path: ["Animado", "Humano", "Condición y relación", "Familia"] },
+                { example: "abuela", path: ["Animado", "Humano", "Condición y relación", "Familia"] },
+                { example: "Hernández", path: ["Animado", "Humano", "Condición y relación", "Apellidos"] },
+                { example: "Rodríguez", path: ["Animado", "Humano", "Condición y relación", "Apellidos"] },
+                { example: "Luisa", path: ["Animado", "Humano", "Condición y relación", "Nombre propio"] },
+                { example: "Daniel", path: ["Animado", "Humano", "Condición y relación", "Nombre propio"] },
+                { example: "Cleopatra", path: ["Animado", "Humano", "Personaje histórico", "Nombre propio"] },
+                { example: "César", path: ["Animado", "Humano", "Personaje histórico", "Nombre propio"] },
+                { example: "Hernández", path: ["Animado", "Humano", "Personaje histórico", "Apellidos"] },
+                { example: "Domínguez", path: ["Animado", "Humano", "Personaje histórico", "Apellidos"] },
+                { example: "graduado", path: ["Animado", "Humano", "Personaje histórico", "Título"] },
+                { example: "doctor", path: ["Animado", "Humano", "Personaje histórico", "Título"] },
+                { example: "enferma", path: ["Animado", "Humano", "Condición humana", "Negativa"] },
+                { example: "enemigo", path: ["Animado", "Humano", "Condición humana", "Negativa"] },
+                { example: "amiga", path: ["Animado", "Humano", "Condición humana", "Positiva"] },
+                { example: "compañero", path: ["Animado", "Humano", "Condición humana", "Positiva"] },
+                { example: "emigrante", path: ["Animado", "Humano", "Condición humana", "Desplazamiento"] },
+                { example: "nómada", path: ["Animado", "Humano", "Condición humana", "Desplazamiento"] },
+                { example: "paciente", path: ["Animado", "Humano", "Condición humana", "Medicina"] },
+                { example: "convaleciente", path: ["Animado", "Humano", "Condición humana", "Medicina"] },
+                { example: "estudiante", path: ["Animado", "Humano", "Condición humana", "Educación"] },
+                { example: "profesora", path: ["Animado", "Humano", "Condición humana", "Educación"] },
+                { example: "inquilina", path: ["Animado", "Humano", "Condición humana", "Habitante"] },
+                { example: "vecino", path: ["Animado", "Humano", "Condición humana", "Habitante"] },
+                { example: "manifestante", path: ["Animado", "Humano", "Agente o actor", "General"] },
+                { example: "filántropo", path: ["Animado", "Humano", "Agente o actor", "General"] },
+                { example: "inventor", path: ["Animado", "Humano", "Agente o actor", "Acto positivo"] },
+                { example: "donante", path: ["Animado", "Humano", "Agente o actor", "Acto positivo"] },
+                { example: "bandido", path: ["Animado", "Humano", "Agente o actor", "Acto negativo"] },
+                { example: "asesina", path: ["Animado", "Humano", "Agente o actor", "Acto negativo"] },
+                { example: "decana", path: ["Animado", "Humano", "Actividad", "Cargo"] },
+                { example: "alcalde", path: ["Animado", "Humano", "Actividad", "Cargo"] },
+                { example: "fontanero", path: ["Animado", "Humano", "Actividad", "Profesión"] },
+                { example: "electricista", path: ["Animado", "Humano", "Actividad", "Profesión"] },
+                { example: "profesora", path: ["Animado", "Humano", "Actividad", "Educación"] },
+                { example: "docente", path: ["Animado", "Humano", "Actividad", "Educación"] },
+                { example: "catolicismo", path: ["Animado", "Humano", "Pensamiento y creencia", "Creencia religiosa"] },
+                { example: "taoísmo", path: ["Animado", "Humano", "Pensamiento y creencia", "Creencia religiosa"] },
+                { example: "socialista", path: ["Animado", "Humano", "Pensamiento y creencia", "Ideología política"] },
+                { example: "centrista", path: ["Animado", "Humano", "Pensamiento y creencia", "Ideología política"] },
+                { example: "club", path: ["Animado", "Humano", "Organizaciones y grupos", "Asociación tiempo libre"] },
+                { example: "peña", path: ["Animado", "Humano", "Organizaciones y grupos", "Asociación tiempo libre"] },
+                { example: "Cruz Roja", path: ["Animado", "Humano", "Organizaciones y grupos", "Organización", "General"] },
+                { example: "UNESCO", path: ["Animado", "Humano", "Organizaciones y grupos", "Organización", "General"] },
+                { example: "ONU", path: ["Animado", "Humano", "Organizaciones y grupos", "Organización", "Política"] },
+                { example: "Unión Europea", path: ["Animado", "Humano", "Organizaciones y grupos", "Organización", "Política"] },
+                { example: "Universidad", path: ["Animado", "Humano", "Organizaciones y grupos", "Organización", "Educativa"] },
+                { example: "colegio", path: ["Animado", "Humano", "Organizaciones y grupos", "Organización", "Educativa"] },
+                { example: "ejército", path: ["Animado", "Humano", "Organizaciones y grupos", "Organización", "Militar"] },
+                { example: "milicias", path: ["Animado", "Humano", "Organizaciones y grupos", "Organización", "Militar"] },
+                { example: "editorial", path: ["Animado", "Humano", "Organizaciones y grupos", "Organización", "Empresarial"] },
+                { example: "conservera", path: ["Animado", "Humano", "Organizaciones y grupos", "Organización", "Empresarial"] },
+                { example: "RTVE", path: ["Animado", "Humano", "Organizaciones y grupos", "Organización", "Cadena"] },
+                { example: "Antena 3", path: ["Animado", "Humano", "Organizaciones y grupos", "Organización", "Cadena"] },
+                { example: "parlamento", path: ["Animado", "Humano", "Organizaciones y grupos", "Organización", "Gubernamental"] },
+                { example: "gobierno", path: ["Animado", "Humano", "Organizaciones y grupos", "Organización", "Gubernamental"] },
+                { example: "hospital", path: ["Animado", "Humano", "Organizaciones y grupos", "Organización", "Médica"] },
+                { example: "clínica", path: ["Animado", "Humano", "Organizaciones y grupos", "Organización", "Médica"] },
+                { example: "Facebook", path: ["Animado", "Humano", "Organizaciones y grupos", "Organización", "Virtual"] },
+                { example: "Instagram", path: ["Animado", "Humano", "Organizaciones y grupos", "Organización", "Virtual"] },
+                { example: "España", path: ["Animado", "Humano", "Organizaciones y grupos", "Organización", "País"] },
+                { example: "Portugal", path: ["Animado", "Humano", "Organizaciones y grupos", "Organización", "País"] },
+                { example: "equipo", path: ["Animado", "Humano", "Organizaciones y grupos", "Grupo o colectivo", "General"] },
+                { example: "quinteto", path: ["Animado", "Humano", "Organizaciones y grupos", "Grupo o colectivo", "General"] },
+                { example: "infanteria", path: ["Animado", "Humano", "Organizaciones y grupos", "Grupo o colectivo", "Militar"] },
+                { example: "caballería", path: ["Animado", "Humano", "Organizaciones y grupos", "Grupo o colectivo", "Militar"] },
+                { example: "coloquio", path: ["Animado", "Humano", "Organizaciones y grupos", "Grupo o colectivo", "Grupo", "Reunión"] },
+                { example: "foro", path: ["Animado", "Humano", "Organizaciones y grupos", "Grupo o colectivo", "Grupo", "Reunión"] },
+                { example: "hadas", path: ["Animado", "Criaturas de Ficción", "General"] },
+                { example: "monstruo", path: ["Animado", "Criaturas de Ficción", "General"] },
+                { example: "Mickey Mouse", path: ["Animado", "Criaturas de Ficción",  "Nombre propio"] },
+                { example: "Afrodita", path: ["Animado", "Criaturas de Ficción", "Nombre propio"] },
+                { example: "perra", path: ["Animado", "Animal", "General"] },
+                { example: "gato", path: ["Animado", "Animal", "General"] },
+                { example: "leona", path: ["Animado", "Animal", "Mamífero"] },
+                { example: "tigre", path: ["Animado", "Animal", "Mamífero"] },
+                { example: "águila", path: ["Animado", "Animal", "Ave"] },
+                { example: "loro", path: ["Animado", "Animal", "Ave"] },
+                { example: "tiburón", path: ["Animado", "Animal", "Pez"] },
+                { example: "sardina", path: ["Animado", "Animal", "Pez"] },
+                { example: "serpiente", path: ["Animado", "Animal", "Reptil"] },
+                { example: "cocodrilo", path: ["Animado", "Animal", "Reptil"] },
+                { example: "mosca", path: ["Animado", "Animal", "Insecto"] },
+                { example: "libélula", path: ["Animado", "Animal", "Insecto"] },
+                { example: "flor", path: ["Animado", "Vegetal", "Planta"] },
+                { example: "árbol", path: ["Animado", "Vegetal", "Planta"] },
+                { example: "eucalipto", path: ["Animado", "Vegetal", "Árbol"] },
+                { example: "pino", path: ["Animado", "Vegetal", "Árbol"] },
+                { example: "rosa", path: ["Animado", "Vegetal", "Flor"] },
+                { example: "margarita", path: ["Animado", "Vegetal", "Flor"] },
+                { example: "naranja", path: ["Animado", "Vegetal", "Fruta"] },
+                { example: "plátano", path: ["Animado", "Vegetal", "Fruta"] },
+                { example: "cebolla", path: ["Animado", "Vegetal", "Hortaliza"] },
+                { example: "zanahoria", path: ["Animado", "Vegetal", "Hortaliza"] },
+                { example: "canela", path: ["Animado", "Vegetal", "Especies y condimentos"] },
+                { example: "pimienta", path: ["Animado", "Vegetal", "Especies y condimentos"] },
+                { example: "cuello", path: ["Animado", "Partes del cuerpo o ser vivo", "Humano", "General"] },
+                { example: "pies", path: ["Animado", "Partes del cuerpo o ser vivo", "Humano", "General"] },
+                { example: "cabeza", path: ["Animado", "Partes del cuerpo o ser vivo", "Humano", "Externa"] },
+                { example: "espalda", path: ["Animado", "Partes del cuerpo o ser vivo", "Humano", "Externa"] },
+                { example: "piel", path: ["Animado", "Partes del cuerpo o ser vivo", "Humano", "Recubrimiento"] },
+                { example: "pelo", path: ["Animado", "Partes del cuerpo o ser vivo", "Humano", "Recubrimiento"] },
+                { example: "peroné", path: ["Animado", "Partes del cuerpo o ser vivo", "Humano", "Interna (músculos y huesos)"] },
+                { example: "glúteos", path: ["Animado", "Partes del cuerpo o ser vivo", "Humano", "Interna (músculos y huesos)"] },
+                { example: "ovarios", path: ["Animado", "Partes del cuerpo o ser vivo", "Humano", "Órganos"] },
+                { example: "hígado", path: ["Animado", "Partes del cuerpo o ser vivo", "Humano", "Órganos"] },
+                { example: "pata", path: ["Animado", "Partes del cuerpo o ser vivo", "Animal", "General"] },
+                { example: "garras", path: ["Animado", "Partes del cuerpo o ser vivo", "Animal", "General"] },
+                { example: "quilla", path: ["Animado", "Partes del cuerpo o ser vivo", "Animal", "Interna (músculos y huesos)"] },
+                { example: "coracoides", path: ["Animado", "Partes del cuerpo o ser vivo", "Animal", "Interna (músculos y huesos)"] },
+                { example: "tallo", path: ["Animado", "Partes del cuerpo o ser vivo", "Vegetal"] },
+                { example: "tronco", path: ["Animado", "Partes del cuerpo o ser vivo", "Vegetal"] },
+                { example: "raíz", path: ["Animado", "Partes del cuerpo o ser vivo", "Vegetal"] },
+                { example: "pitillo", path: ["Material", "Objeto", "Categorías de productos", "General"] },
+                { example: "claxon", path: ["Material", "Objeto", "Categorías de productos", "General"] },
+                { example: "ébano", path: ["Material", "Objeto", "Categorías de productos", "Madera"] },
+                { example: "roble", path: ["Material", "Objeto", "Categorías de productos", "Madera"] },
+                { example: "rubí", path: ["Material", "Objeto", "Categorías de productos", "Minerales y metales"] },
+                { example: "aluminio", path: ["Material", "Objeto", "Categorías de productos", "Minerales y metales"] },
+                { example: "corcho", path: ["Material", "Objeto", "Categorías de productos", "Orgánico"] },
+                { example: "lino", path: ["Material", "Objeto", "Categorías de productos", "Orgánico"] },
+                { example: "mármol", path: ["Material", "Objeto", "Categorías de productos", "Piedras ornamentales"] },
+                { example: "cuarzo", path: ["Material", "Objeto", "Categorías de productos", "Piedras ornamentales"] },
+                { example: "plástico", path: ["Material", "Objeto", "Categorías de productos", "Artificial"] },
+                { example: "vidrio", path: ["Material", "Objeto", "Categorías de productos", "Artificial"] },
+                { example: "porcelana", path: ["Material", "Objeto", "Categorías de productos", "Cerámico"] },
+                { example: "barro", path: ["Material", "Objeto", "Categorías de productos", "Cerámico"] },
+                { example: "cortina", path: ["Material", "Objeto", "Categorías de productos", "Mobiliario"] },
+                { example: "armario", path: ["Material", "Objeto", "Categorías de productos", "Mobiliario"] },
+                { example: "pintalabios", path: ["Material", "Objeto", "Categorías de productos", "Cuidado personal (cosmética)"] },
+                { example: "esmalte", path: ["Material", "Objeto", "Categorías de productos", "Cuidado personal (cosmética)"] },
+                { example: "anillo", path: ["Material", "Objeto", "Categorías de productos", "Ornamentación (joya)"] },
+                { example: "pendientes", path: ["Material", "Objeto", "Categorías de productos", "Ornamentación (joya)"] },
+                { example: "pastilla", path: ["Material", "Objeto", "Categorías de productos", "Medicamento"] },
+                { example: "píldora", path: ["Material", "Objeto", "Categorías de productos", "Medicamento"] },
+                { example: "piano", path: ["Material", "Objeto", "Categorías de productos", "Musical"] },
+                { example: "guitarra", path: ["Material", "Objeto", "Categorías de productos", "Musical"] },
+                { example: "sartén", path: ["Material", "Objeto", "Categorías de productos", "Aparato de cocina"] },
+                { example: "olla", path: ["Material", "Objeto", "Categorías de productos", "Aparato de cocina"] },
+                { example: "billete", path: ["Material", "Objeto", "Categorías de productos", "Monetario"] },
+                { example: "dinero", path: ["Material", "Objeto", "Categorías de productos", "Monetario"] },
+                { example: "cámara", path: ["Material", "Objeto", "Categorías de productos", "Tecnología", "General"] },
+                { example: "dron", path: ["Material", "Objeto", "Categorías de productos", "Tecnología", "General"] },
+                { example: "ordenador", path: ["Material", "Objeto", "Categorías de productos", "Tecnología", "Dispositivo"] },
+                { example: "smartphone", path: ["Material", "Objeto", "Categorías de productos", "Tecnología", "Dispositivo"] },
+                { example: "base", path: ["Material", "Objeto", "Categorías de productos", "Superficie (parte)", "Parte"] },
+                { example: "borde", path: ["Material", "Objeto", "Categorías de productos", "Superficie (parte)", "Parte"] },
+                { example: "postre", path: ["Material", "Objeto", "Gastronomía e ingesta", "General"] },
+                { example: "entrante", path: ["Material", "Objeto", "Gastronomía e ingesta", "General"] },
+                { example: "banquete", path: ["Material", "Objeto", "Gastronomía e ingesta", "Refección"] },
+                { example: "festín", path: ["Material", "Objeto", "Gastronomía e ingesta", "Refección"] },
+                { example: "pastel", path: ["Material", "Objeto", "Gastronomía e ingesta", "Harinas y postres"] },
+                { example: "manitoba", path: ["Material", "Objeto", "Gastronomía e ingesta", "Harinas y postres"] },
+                { example: "churrasco", path: ["Material", "Objeto", "Gastronomía e ingesta", "Animal"] },
+                { example: "asado", path: ["Material", "Objeto", "Gastronomía e ingesta", "Animal"] },
+                { example: "cerdo", path: ["Material", "Objeto", "Gastronomía e ingesta", "Mamífero"] },
+                { example: "ternera", path: ["Material", "Objeto", "Gastronomía e ingesta", "Mamífero"] },
+                { example: "pollo", path: ["Material", "Objeto", "Gastronomía e ingesta", "Ave"] },
+                { example: "pavo", path: ["Material", "Objeto", "Gastronomía e ingesta", "Ave"] },
+                { example: "salmón", path: ["Material", "Objeto", "Gastronomía e ingesta", "Acuático", "General"] },
+                { example: "pulpo", path: ["Material", "Objeto", "Gastronomía e ingesta", "Acuático", "General"] },
+                { example: "trucha", path: ["Material", "Objeto", "Gastronomía e ingesta", "Acuático", "Pescado"] },
+                { example: "sushi", path: ["Material", "Objeto", "Gastronomía e ingesta", "Acuático", "Pescado"] },
+                { example: "bovagante", path: ["Material", "Objeto", "Gastronomía e ingesta", "Acuático", "Marisco"] },
+                { example: "cigalas", path: ["Material", "Objeto", "Gastronomía e ingesta", "Acuático", "Marisco"] },
+                { example: "albahaca", path: ["Material", "Objeto", "Gastronomía e ingesta", "Planta y condimento"] },
+                { example: "pimienta", path: ["Material", "Objeto", "Gastronomía e ingesta", "Planta y condimento"] },
+                { example: "baldosa", path: ["Material", "Objeto", "Construcción y urbanismo", "Construcción", "Parte", "Material"] },
+                { example: "teja", path: ["Material", "Objeto", "Construcción y urbanismo", "Construcción", "Parte", "Material"] },
+                { example: "ventana", path: ["Material", "Objeto", "Construcción y urbanismo", "Construcción", "Parte", "General"] },
+                { example: "verja", path: ["Material", "Objeto", "Construcción y urbanismo", "Construcción", "Parte", "General"] },
+                { example: "azotea", path: ["Material", "Objeto", "Construcción y urbanismo", "Construcción", "Habitación"] },
+                { example: "buhardilla", path: ["Material", "Objeto", "Construcción y urbanismo", "Construcción", "Habitación"] },
+                { example: "catedral", path: ["Material", "Objeto", "Construcción y urbanismo", "Construcción", "Tipo", "General"] },
+                { example: "rascacielos", path: ["Material", "Objeto", "Construcción y urbanismo", "Construcción", "Tipo", "General"] },
+                { example: "hospital", path: ["Material", "Objeto", "Construcción y urbanismo", "Construcción", "Tipo", "Médico"] },
+                { example: "sanatorio", path: ["Material", "Objeto", "Construcción y urbanismo", "Construcción", "Tipo", "Médico"] },
+                { example: "cárcel", path: ["Material", "Objeto", "Construcción y urbanismo", "Construcción", "Tipo", "Jurisprudencia"] },
+                { example: "sala de lo penal", path: ["Material", "Objeto", "Construcción y urbanismo", "Construcción", "Tipo", "Jurisprudencia"] },
+                { example: "periódico", path: ["Material", "Objeto", "Construcción y urbanismo", "Construcción", "Tipo", "Empresarial"] },
+                { example: "editorial", path: ["Material", "Objeto", "Construcción y urbanismo", "Construcción", "Tipo", "Empresarial"] },
+                { example: "casa", path: ["Material", "Objeto", "Construcción y urbanismo", "Construcción", "Tipo", "Domicilio"] },
+                { example: "rascacielos", path: ["Material", "Objeto", "Construcción y urbanismo", "Construcción", "Tipo", "Domicilio"] },
+                { example: "aula", path: ["Material", "Objeto", "Construcción y urbanismo", "Construcción", "Tipo", "Educación"] },
+                { example: "gimnasio", path: ["Material", "Objeto", "Construcción y urbanismo", "Construcción", "Tipo", "Educación"] },
+                { example: "albergue", path: ["Material", "Objeto", "Construcción y urbanismo", "Construcción", "Tipo", "Desplazamiento"] },
+                { example: "parador", path: ["Material", "Objeto", "Construcción y urbanismo", "Construcción", "Tipo", "Desplazamiento"] },
+                { example: "carretera", path: ["Material", "Objeto", "Construcción y urbanismo", "Urbanismo", "Vía"] },
+                { example: "calle", path: ["Material", "Objeto", "Construcción y urbanismo", "Urbanismo", "Vía"] },
+                { example: "canal", path: ["Material", "Objeto", "Construcción y urbanismo", "Urbanismo", "Canal"] },
+                { example: "acueducto", path: ["Material", "Objeto", "Construcción y urbanismo", "Urbanismo", "Canal"] },
+                { example: "puente", path: ["Material", "Objeto", "Construcción y urbanismo", "Urbanismo", "Puente"] },
+                { example: "pasarela", path: ["Material", "Objeto", "Construcción y urbanismo", "Urbanismo", "Puente"] },
+                { example: "papelera", path: ["Material", "Objeto", "Construcción y urbanismo", "Urbanismo", "Mobiliario"] },
+                { example: "farola", path: ["Material", "Objeto", "Construcción y urbanismo", "Urbanismo", "Mobiliario"] },
+                { example: "zapatos", path: ["Material", "Objeto", "Vestimenta", "Calzado"] },
+                { example: "botas", path: ["Material", "Objeto", "Vestimenta", "Calzado"] },
+                { example: "falda", path: ["Material", "Objeto", "Vestimenta", "Ropa"] },
+                { example: "kimono", path: ["Material", "Objeto", "Vestimenta", "Ropa"] },
+                { example: "tanque", path: ["Material", "Objeto", "Locomoción", "General"] },
+                { example: "avión", path: ["Material", "Objeto", "Locomoción", "General"] },
+                { example: "moto", path: ["Material", "Objeto", "Locomoción", "Terrestre"] },
+                { example: "camión", path: ["Material", "Objeto", "Locomoción", "Terrestre"] },
+                { example: "submarino", path: ["Material", "Objeto", "Locomoción", "Acuático"] },
+                { example: "barca", path: ["Material", "Objeto", "Locomoción", "Acuático"] },
+                { example: "cazas", path: ["Material", "Objeto", "Locomoción", "Aéreo"] },
+                { example: "bombarderos", path: ["Material", "Objeto", "Locomoción", "Aéreo"] },
+                { example: "carta", path: ["Material", "Objeto", "Comunicación", "General"] },
+                { example: "cartel", path: ["Material", "Objeto", "Comunicación", "General"] },
+                { example: "volumen", path: ["Material", "Objeto", "Comunicación", "Texto", "Ejemplos"] },
+                { example: "borrador", path: ["Material", "Objeto", "Comunicación", "Texto", "Ejemplos"] },
+                { example: "panfleto", path: ["Material", "Objeto", "Comunicación", "Texto", "Tipo textual"] },
+                { example: "fake news", path: ["Material", "Objeto", "Comunicación", "Texto", "Tipo textual"] },
+                { example: "libro", path: ["Material", "Objeto", "Comunicación", "Texto", "Publicado"] },
+                { example: "periódico", path: ["Material", "Objeto", "Comunicación", "Texto", "Publicado"] },
+                { example: "introducción", path: ["Material", "Objeto", "Comunicación", "Texto", "Parte"] },
+                { example: "preámbulo", path: ["Material", "Objeto", "Comunicación", "Texto", "Parte"] },
+                { example: "certificado", path: ["Material", "Objeto", "Comunicación", "Texto", "Documento"] },
+                { example: "pasaporte", path: ["Material", "Objeto", "Comunicación", "Texto", "Documento"] },
+                { example: "contrato", path: ["Material", "Objeto", "Comunicación", "Acuerdo"] },
+                { example: "convenio", path: ["Material", "Objeto", "Comunicación", "Acuerdo"] },
+                { example: "pendrive", path: ["Material", "Objeto", "Comunicación", "Audiovisual"] },
+                { example: "tablet", path: ["Material", "Objeto", "Comunicación", "Audiovisual"] },
+                { example: "eBook", path: ["Material", "Objeto", "Comunicación", "Digital"] },
+                { example: "página web", path: ["Material", "Objeto", "Comunicación", "Digital"] },
+                { example: "sudor", path: ["Material", "Sustancia", "General"] },
+                { example: "lágrima", path: ["Material",  "Sustancia", "General"] },
+                { example: "gasolina", path: ["Material", "Sustancia", "Carburante"] },
+                { example: "diesel", path: ["Material",  "Sustancia", "Carburante"] },
+                { example: "jarabe", path: ["Material",  "Sustancia", "Medicamento"] },
+                { example: "gotas", path: ["Material", "Sustancia", "Medicamento"] },
+                { example: "moneda", path: ["Material", "Cantidad y medida", "Monetaria"] },
+                { example: "dólar", path: ["Material", "Cantidad y medida", "Monetaria"] },
+                { example: "dos", path: ["Material", "Cantidad y medida", "Numérico", "Número"] },
+                { example: "cuatro", path: ["Material", "Cantidad y medida", "Numérico", "Número"] },
+                { example: "20%", path: ["Material", "Cantidad y medida", "Numérico", "Porcentaje"] },
+                { example: "90%", path: ["Material", "Cantidad y medida", "Numérico", "Porcentaje"] },
+                { example: "mitad", path: ["Material", "Cantidad y medida", "Numérico", "Relacional"] },
+                { example: "resto", path: ["Material", "Cantidad y medida", "Numérico", "Relacional"] },
+                { example: "millón", path: ["Material", "Cantidad y medida", "Numérico", "Numérica"] },
+                { example: "trillón", path: ["Material", "Cantidad y medida", "Numérico", "Numérica"] },
+                { example: "euro", path: ["Material", "Cantidad y medida", "monetaria"] },
+                { example: "dólar", path: ["Material", "Cantidad y medida", "monetaria"] },
+                { example: "centímetros", path: ["Material", "Cantidad y medida", "Medida", "Espacio", "Lineal", "Objeto"] },
+                { example: "milímetros", path: ["Material", "Cantidad y medida", "Medida", "Espacio", "Lineal", "Objeto"] },
+                { example: "quilómetros", path: ["Material", "Cantidad y medida", "Medida", "Espacio", "Superficie"] },
+                { example: "yardas", path: ["Material", "Cantidad y medida", "Medida", "Espacio", "Superficie"] },
+                { example: "Megabyte", path: ["Material", "Cantidad y medida", "Información digital"] },
+                { example: "Gigabyte", path: ["Material", "Cantidad y medida", "Información digital"] },
+                { example: "vatio", path: ["Material", "Cantidad y medida", "Potencia"] },
+                { example: "kilovatio", path: ["Material", "Cantidad y medida", "Potencia"] }
+            ];
+
+            const renderResults = (results) => {
+                const html = results.map(item => {
+                    const pathText = item.path.join(' → ');
+                    return `
+                        <div class="result-card">
+                            <div class="result-example">${item.example}</div>
+                            <div class="result-path">${pathText}</div>
+                        </div>
+                    `;
+                }).join('');
+                resultsContainer.innerHTML = html;
+            };
+
+            const filterData = (query) => {
+                const lowerQuery = query.toLowerCase().trim();
+                if (lowerQuery.length === 0) {
+                    renderResults(data);
+                    return;
+                }
+                
+                const filtered = data.filter(item => 
+                    item.example.toLowerCase().includes(lowerQuery) ||
+                    item.path.some(p => p.toLowerCase().includes(lowerQuery))
+                );
+                renderResults(filtered);
+            };
+
+            searchInput.addEventListener('input', (event) => {
+                filterData(event.target.value);
+            });
+
+            // Ordenar los datos por ejemplo alfabéticamente al cargar
+            data.sort((a, b) => a.example.localeCompare(b.example, 'es', { sensitivity: 'base' }));
+
+            // Mostrar todos los resultados al cargar la página
+            filterData('');
+        });
+    </script>
+
+</body>
+</html>
